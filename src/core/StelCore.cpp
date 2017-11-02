@@ -54,6 +54,11 @@
 #include <iostream>
 #include <fstream>
 
+#include "SimpleSerial.h"
+
+SimpleSerial arduino("/dev/ttyACM0",115200);
+std::string str,turnUpDown,turnLeftRight;
+
 // Init static transfo matrices
 // See vsop87.doc:
 const Mat4d StelCore::matJ2000ToVsop87(Mat4d::xrotation(-23.4392803055555555556*(M_PI/180)) * Mat4d::zrotation(0.0000275*(M_PI/180)));
@@ -492,6 +497,36 @@ void StelCore::update(double deltaTime)
 
 	// Transform matrices between coordinates systems
 	updateTransformMatrices();
+
+	str = arduino.readLine();
+	turnLeftRight = str.substr(0,str.find(','));
+	turnUpDown = str.substr(str.find(',')+1,std::string::npos);
+
+	if(turnLeftRight == "1"){
+	    movementMgr->turnLeft(false);
+	    movementMgr->turnRight(true);
+	}
+	else if (turnLeftRight == "-1"){
+	    movementMgr->turnRight(false);
+	    movementMgr->turnLeft(true);
+	}
+	else{
+	  movementMgr->turnLeft(false);
+	  movementMgr->turnRight(false);
+	}
+
+	if(turnUpDown == "1"){
+	  	movementMgr->turnLeft(false);
+	    movementMgr->turnUp(true);
+	}
+	else if (turnUpDown == "-1"){
+	  	movementMgr->turnRight(false);
+	    movementMgr->turnDown(true);
+	}
+	else{
+	  movementMgr->turnUp(false);
+	  movementMgr->turnDown(false);
+	}
 
 	// Update direction of vision/Zoom level
 	movementMgr->updateMotion(deltaTime);
